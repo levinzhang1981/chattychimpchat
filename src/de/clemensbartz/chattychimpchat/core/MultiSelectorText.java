@@ -46,16 +46,11 @@ public class MultiSelectorText implements IMultiSelector {
      * @return The collection of views that contain the given text
      */
     @Override
-    public Collection<IChimpView> getViews(ChimpManager manager) {
+    public Collection<IChimpView> getViews(ChimpManager manager) throws IOException {
         String response;
         List<String> ids;
-        try {
-            response = manager.getViewsWithText(text);
-            ids = Arrays.asList(response.split(" "));
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Error communicating with device: " + e.getMessage());
-            return new ArrayList<IChimpView>();
-        }
+        response = manager.getViewsWithText(text);
+        ids = Arrays.asList(response.split(" "));
         /* We make sure this has an even number of results because we don't necessarily know how
          * many views with the given textthere are, but we know all of the views will return a pair
          * of accessibility ids */

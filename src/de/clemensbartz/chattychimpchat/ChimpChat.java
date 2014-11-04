@@ -17,10 +17,13 @@
 
 package de.clemensbartz.chattychimpchat;
 
+import com.android.ddmlib.AdbCommandRejectedException;
+import com.android.ddmlib.TimeoutException;
 import de.clemensbartz.chattychimpchat.adb.AdbBackend;
 import de.clemensbartz.chattychimpchat.core.IChimpBackend;
 import de.clemensbartz.chattychimpchat.core.IChimpDevice;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -87,7 +90,8 @@ public class ChimpChat {
      * @param deviceId the id of the device you want to connect to
      * @return an instance of the device
      */
-    public IChimpDevice waitForConnection(long timeoutMs, String deviceId){
+    public IChimpDevice waitForConnection(long timeoutMs, String deviceId) throws IOException,
+            AdbCommandRejectedException, InterruptedException, TimeoutException {
         return mBackend.waitForConnection(timeoutMs, deviceId);
     }
 
@@ -96,14 +100,15 @@ public class ChimpChat {
      * Defaults to the longest possible wait time and any available device.
      * @return an instance of the device
      */
-    public IChimpDevice waitForConnection(){
+    public IChimpDevice waitForConnection() throws IOException, AdbCommandRejectedException,
+            InterruptedException, TimeoutException {
         return mBackend.waitForConnection(Integer.MAX_VALUE, ".*");
     }
 
     /**
      * Shutdown and clean up chimpchat.
      */
-    public void shutdown(){
+    public void shutdown() throws IOException {
         mBackend.shutdown();
     }
 }

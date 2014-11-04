@@ -15,6 +15,11 @@
  */
 package de.clemensbartz.chattychimpchat.core;
 
+import com.android.ddmlib.AdbCommandRejectedException;
+import com.android.ddmlib.TimeoutException;
+
+import java.io.IOException;
+
 /**
  * Interface between the ChimpChat API and the ChimpChat backend that communicates
  * with Monkey.
@@ -25,7 +30,7 @@ public interface IChimpBackend {
      *
      * @return the connected device (or null if timeout);
      */
-    IChimpDevice waitForConnection();
+    IChimpDevice waitForConnection() throws IOException, AdbCommandRejectedException, InterruptedException, TimeoutException;
 
     /**
      * Wait for a device to connect to the backend.
@@ -34,10 +39,10 @@ public interface IChimpBackend {
      * @param deviceIdRegex the regular expression to specify which device to wait for.
      * @return the connected device (or null if timeout);
      */
-    IChimpDevice waitForConnection(long timeoutMs, String deviceIdRegex);
+    IChimpDevice waitForConnection(long timeoutMs, String deviceIdRegex) throws IOException, AdbCommandRejectedException, InterruptedException, TimeoutException;
 
     /**
      * Shutdown the backend and cleanup any resources it was using.
      */
-    void shutdown();
+    void shutdown() throws IOException;
 }

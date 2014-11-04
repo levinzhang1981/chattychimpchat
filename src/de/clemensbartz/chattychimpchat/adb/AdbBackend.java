@@ -15,6 +15,8 @@
  */
 package de.clemensbartz.chattychimpchat.adb;
 
+import com.android.ddmlib.AdbCommandRejectedException;
+import com.android.ddmlib.TimeoutException;
 import com.google.common.collect.Lists;
 
 import com.android.SdkConstants;
@@ -24,8 +26,8 @@ import com.android.ddmlib.AndroidDebugBridge;
 import com.android.ddmlib.IDevice;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -109,12 +111,15 @@ public class AdbBackend implements IChimpBackend {
     }
 
     @Override
-    public IChimpDevice waitForConnection() {
+    public IChimpDevice waitForConnection() throws IOException,
+            AdbCommandRejectedException, InterruptedException, TimeoutException {
         return waitForConnection(Integer.MAX_VALUE, ".*");
     }
 
     @Override
-    public IChimpDevice waitForConnection(long timeoutMs, String deviceIdRegex) {
+    public IChimpDevice waitForConnection(long timeoutMs, String deviceIdRegex) throws IOException,
+            AdbCommandRejectedException, InterruptedException, TimeoutException
+    {
         do {
             IDevice device = findAttachedDevice(deviceIdRegex);
             // Only return the device when it is online
@@ -124,11 +129,7 @@ public class AdbBackend implements IChimpBackend {
                 return chimpDevice;
             }
 
-            try {
-                Thread.sleep(CONNECTION_ITERATION_TIMEOUT_MS);
-            } catch (InterruptedException e) {
-                LOG.log(Level.SEVERE, "Error sleeping", e);
-            }
+            Thread.sleep(CONNECTION_ITERATION_TIMEOUT_MS);
             timeoutMs -= CONNECTION_ITERATION_TIMEOUT_MS;
         } while (timeoutMs > 0);
 
@@ -137,7 +138,7 @@ public class AdbBackend implements IChimpBackend {
     }
 
     @Override
-    public void shutdown() {
+    public void shutdown() throws IOException {
         for (IChimpDevice device : devices) {
             device.dispose();
         }

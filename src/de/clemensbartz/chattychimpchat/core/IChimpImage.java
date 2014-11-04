@@ -16,6 +16,7 @@
 package de.clemensbartz.chattychimpchat.core;
 
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 /**
  * ChimpImage interface.
@@ -29,8 +30,8 @@ public interface IChimpImage {
 
     IChimpImage getSubImage(int x, int y, int w, int h);
 
-    byte[] convertToBytes(String format);
-    boolean writeToFile(String path, String format);
+    byte[] convertToBytes(String format) throws IOException;
+    boolean writeToFile(String path, String format) throws IOException;
     int getPixel(int x, int y);
     boolean sameAs(IChimpImage other, double percent);
 }

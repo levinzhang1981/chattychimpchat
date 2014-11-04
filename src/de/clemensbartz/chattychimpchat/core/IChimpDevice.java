@@ -17,9 +17,14 @@
 package de.clemensbartz.chattychimpchat.core;
 
 import com.android.annotations.Nullable;
+import com.android.ddmlib.AdbCommandRejectedException;
+import com.android.ddmlib.InstallException;
+import com.android.ddmlib.ShellCommandUnresponsiveException;
+import com.android.ddmlib.TimeoutException;
 import de.clemensbartz.chattychimpchat.ChimpManager;
 import de.clemensbartz.chattychimpchat.hierarchyviewer.HierarchyViewer;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
@@ -37,7 +42,7 @@ public interface IChimpDevice {
     /**
      * Dispose of any native resources this device may have taken hold of.
      */
-    void dispose();
+    void dispose() throws IOException;
 
     /**
      * @return hierarchy viewer implementation for querying state of the view
@@ -49,21 +54,21 @@ public interface IChimpDevice {
      * Take the current screen's snapshot.
      * @return the snapshot image
      */
-    IChimpImage takeSnapshot();
+    IChimpImage takeSnapshot() throws TimeoutException, AdbCommandRejectedException, IOException;
 
     /**
      * Reboot the device.
      *
      * @param into which bootloader to boot into.  Null means default reboot.
      */
-    void reboot(@Nullable String into);
+    void reboot(@Nullable String into) throws TimeoutException, AdbCommandRejectedException, IOException;
 
     /**
      * List properties of the device that we can inspect
      *
      * @return the list of property keys
      */
-    Collection<String> getPropertyList();
+    Collection<String> getPropertyList() throws IOException;
 
     /**
      * Get device's property.
@@ -71,7 +76,7 @@ public interface IChimpDevice {
      * @param key the property name
      * @return the property value
      */
-    String getProperty(String key);
+    String getProperty(String key) throws IOException;
 
     /**
      * Get system property.
@@ -88,7 +93,7 @@ public interface IChimpDevice {
      * @param y the y coordinate
      * @param type the touch type
      */
-    void touch(int x, int y, TouchPressType type);
+    void touch(int x, int y, TouchPressType type) throws IOException;
 
     /**
      * Perform a press of a given type using a given key.
@@ -96,7 +101,7 @@ public interface IChimpDevice {
      * @param keyName the name of the key to use
      * @param type the type of press to perform
      */
-    void press(String keyName, TouchPressType type);
+    void press(String keyName, TouchPressType type) throws IOException;
 
 
     /**
@@ -105,7 +110,7 @@ public interface IChimpDevice {
      * @param key the key to press
      * @param type the type of press to perform
      */
-    void press(PhysicalButton key, TouchPressType type);
+    void press(PhysicalButton key, TouchPressType type) throws IOException;
 
     /**
      * Perform a drag from one one location to another
@@ -124,7 +129,7 @@ public interface IChimpDevice {
      *
      * @param string the string to type
      */
-    void type(String string);
+    void type(String string) throws IOException;
 
     /**
      * Execute a shell command.
@@ -134,7 +139,7 @@ public interface IChimpDevice {
      * @param cmd the command to execute
      * @return the output of the command
      */
-    String shell(String cmd);
+    String shell(String cmd) throws TimeoutException, ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException;
 
     /**
      * Execute a shell command.
@@ -143,7 +148,7 @@ public interface IChimpDevice {
      * @param timeout maximum time to output response
      * @return the output of the command
      */
-    String shell(String cmd, int timeout);
+    String shell(String cmd, int timeout) throws TimeoutException, ShellCommandUnresponsiveException, AdbCommandRejectedException, IOException;
 
     /**
      * Install a given package.
@@ -151,7 +156,7 @@ public interface IChimpDevice {
      * @param path the path to the installation package
      * @return true if success
      */
-    boolean installPackage(String path);
+    boolean installPackage(String path) throws InstallException;
 
     /**
      * Uninstall a given package.
@@ -159,12 +164,11 @@ public interface IChimpDevice {
      * @param packageName the name of the package
      * @return true if success
      */
-    boolean removePackage(String packageName);
+    boolean removePackage(String packageName) throws InstallException;
 
     /**
      * Start an activity.
-     *
-     * @param uri the URI for the Intent
+     *  @param uri the URI for the Intent
      * @param action the action for the Intent
      * @param data the data URI for the Intent
      * @param mimeType the mime type for the Intent
@@ -173,15 +177,14 @@ public interface IChimpDevice {
      * @param component the component of the Intent
      * @param flags the flags for the Intent
      */
-    void startActivity(@Nullable String uri, @Nullable String action,
-                       @Nullable String data, @Nullable String mimeType,
-                       Collection<String> categories, Map<String, Object> extras, @Nullable String component,
-                       int flags);
+    void startActivity(String uri, String action,
+                       String data, String mimeType,
+                       Collection<String> categories, Map<String, Object> extras, String component,
+                       int flags) throws IOException, InterruptedException, AdbCommandRejectedException, TimeoutException, ShellCommandUnresponsiveException;
 
     /**
      * Send a broadcast intent to the device.
-     *
-     * @param uri the URI for the Intent
+     *  @param uri the URI for the Intent
      * @param action the action for the Intent
      * @param data the data URI for the Intent
      * @param mimeType the mime type for the Intent
@@ -190,10 +193,10 @@ public interface IChimpDevice {
      * @param component the component of the Intent
      * @param flags the flags for the Intent
      */
-    void broadcastIntent(@Nullable String uri, @Nullable String action,
-                         @Nullable String data, @Nullable String mimeType,
-                         Collection<String> categories, Map<String, Object> extras, @Nullable String component,
-                         int flags);
+    void broadcastIntent(String uri, String action,
+                         String data, String mimeType,
+                         Collection<String> categories, Map<String, Object> extras, String component,
+                         int flags) throws IOException, InterruptedException, AdbCommandRejectedException, TimeoutException, ShellCommandUnresponsiveException;
 
     /**
      * Run the specified package with instrumentation and return the output it
@@ -212,18 +215,18 @@ public interface IChimpDevice {
      * and the value is a string containing the test output.
      */
     Map<String, Object> instrument(String packageName,
-                                   Map<String, Object> args);
+                                   Map<String, Object> args) throws IOException, InterruptedException, AdbCommandRejectedException, TimeoutException, ShellCommandUnresponsiveException;
 
     /**
      * Wake up the screen on the device.
      */
-    void wake();
+    void wake() throws IOException;
 
     /**
      * List the possible view ID strings from the current applications resource file
      * @return the list of view id strings
      */
-    Collection<String> getViewIdList();
+    Collection<String> getViewIdList() throws IOException;
 
     /**
      * Retrieve the view object for the view with the given id.
@@ -235,11 +238,11 @@ public interface IChimpDevice {
      * Retrive the root view object.
      * @return the root view object.
      */
-    IChimpView getRootView();
+    IChimpView getRootView() throws IOException;
 
     /**
      * Retrieves the view objects that match the given selector
      * @return A list of views that match the given selector
      */
-    Collection<IChimpView> getViews(IMultiSelector selector);
+    Collection<IChimpView> getViews(IMultiSelector selector) throws IOException;
 }

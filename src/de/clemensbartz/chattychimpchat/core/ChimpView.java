@@ -46,13 +46,8 @@ public class ChimpView implements IChimpView {
         this.manager = manager;
     }
 
-    private String queryView(String query) {
-        try {
-            return manager.queryView(viewType, ids, query);
-        } catch(IOException e) {
-            LOG.log(Level.SEVERE, "Error querying view: " + e.getMessage());
-            return "";
-        }
+    private String queryView(String query) throws IOException {
+        return manager.queryView(viewType, ids, query);
     }
 
     /**
@@ -60,18 +55,14 @@ public class ChimpView implements IChimpView {
      * @return a ChimpRect object with the coordinates for the corners of the view
      */
     @Override
-    public ChimpRect getLocation() {
+    public ChimpRect getLocation() throws IOException, NumberFormatException{
         List<String> result = Lists.newArrayList(queryView("getlocation").split(" "));
         if (result.size() == 4) {
-            try {
-                int left = Integer.parseInt(result.get(0));
-                int top = Integer.parseInt(result.get(1));
-                int width = Integer.parseInt(result.get(2));
-                int height = Integer.parseInt(result.get(3));
-                return new ChimpRect(left, top, left+width, top+height);
-            } catch (NumberFormatException e) {
-                return new ChimpRect();
-            }
+            int left = Integer.parseInt(result.get(0));
+            int top = Integer.parseInt(result.get(1));
+            int width = Integer.parseInt(result.get(2));
+            int height = Integer.parseInt(result.get(3));
+            return new ChimpRect(left, top, left+width, top+height);
         }
         return new ChimpRect();
     }
@@ -81,7 +72,7 @@ public class ChimpView implements IChimpView {
      * @return the text contained by the view
      */
     @Override
-    public String getText() {
+    public String getText() throws IOException{
         return queryView("gettext");
     }
 
@@ -90,7 +81,7 @@ public class ChimpView implements IChimpView {
      * @return the class name of the view
      */
     @Override
-    public String getViewClass(){
+    public String getViewClass() throws IOException {
         return queryView("getclass");
     }
 
@@ -99,7 +90,7 @@ public class ChimpView implements IChimpView {
      * @return true if the view is checked, false otherwise
      */
     @Override
-    public boolean getChecked(){
+    public boolean getChecked() throws IOException {
       return Boolean.valueOf(queryView("getchecked").trim());
     }
 
@@ -108,7 +99,7 @@ public class ChimpView implements IChimpView {
      * @return true if the view is enabled, false otherwise
      */
     @Override
-    public boolean getEnabled(){
+    public boolean getEnabled() throws IOException {
       return Boolean.valueOf(queryView("getenabled").trim());
     }
 
@@ -117,7 +108,7 @@ public class ChimpView implements IChimpView {
      * @return true if the view is selected, false otherwise
      */
     @Override
-    public boolean getSelected(){
+    public boolean getSelected() throws IOException {
       return Boolean.valueOf(queryView("getselected").trim());
     }
 
@@ -126,7 +117,7 @@ public class ChimpView implements IChimpView {
      * @param selected the select status to set for the view
      */
     @Override
-    public void setSelected(boolean selected) {
+    public void setSelected(boolean selected) throws IOException {
       queryView("setselected " + selected);
     }
 
@@ -135,7 +126,7 @@ public class ChimpView implements IChimpView {
      * @return true if the view is focused, false otherwise
      */
     @Override
-    public boolean getFocused(){
+    public boolean getFocused() throws IOException {
       return Boolean.valueOf(queryView("getselected").trim());
     }
 
@@ -144,7 +135,7 @@ public class ChimpView implements IChimpView {
      * @param focused the focus status to set for the view
      */
     @Override
-    public void setFocused(boolean focused) {
+    public void setFocused(boolean focused) throws IOException {
       queryView("setfocused " + focused);
     }
 
@@ -153,7 +144,7 @@ public class ChimpView implements IChimpView {
      * @return the parent of the view
      */
     @Override
-    public IChimpView getParent() {
+    public IChimpView getParent() throws IOException {
         List<String> results = Lists.newArrayList(queryView("getparent").split(" "));
         if (results.size() == 2) {
             ChimpView parent = new ChimpView(ChimpView.ACCESSIBILITY_IDS, results);
@@ -168,7 +159,7 @@ public class ChimpView implements IChimpView {
      * @return the children of the view as a List of IChimpViews
      */
     @Override
-    public List<IChimpView> getChildren() {
+    public List<IChimpView> getChildren() throws IOException {
         List<String> results = Lists.newArrayList(queryView("getchildren").split(" "));
         /* We make sure this has an even number of results because we don't necessarily know how
          * many children there are, but we know all children will return a pair of accessibility ids
@@ -193,15 +184,11 @@ public class ChimpView implements IChimpView {
      * and the accessibility node id as a long.
      */
     @Override
-    public AccessibilityIds getAccessibilityIds() {
+    public AccessibilityIds getAccessibilityIds() throws IOException, NumberFormatException{
         List<String> results = Lists.newArrayList(queryView("getaccessibilityids").split(" "));
         if (results.size() == 2) {
-            try {
-                return new AccessibilityIds(Integer.parseInt(results.get(0)),
-                                            Long.parseLong(results.get(1)));
-            } catch (NumberFormatException e) {
-                LOG.log(Level.SEVERE, "Error retrieving accesibility ids: " + e.getMessage());
-            }
+            return new AccessibilityIds(Integer.parseInt(results.get(0)),
+                    Long.parseLong(results.get(1)));
         }
         return new AccessibilityIds(0, 0);
     }

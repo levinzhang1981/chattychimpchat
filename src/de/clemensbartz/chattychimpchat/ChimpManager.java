@@ -239,22 +239,10 @@ public class ChimpManager {
     /**
      * Close all open resources related to this device.
      */
-    public void close() {
-        try {
-            monkeySocket.close();
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Unable to close monkeySocket", e);
-        }
-        try {
-            monkeyReader.close();
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Unable to close monkeyReader", e);
-        }
-        try {
-            monkeyWriter.close();
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Unable to close monkeyWriter", e);
-        }
+    public void close() throws IOException{
+        monkeySocket.close();
+        monkeyReader.close();
+        monkeyWriter.close();
     }
 
     /**
@@ -308,12 +296,7 @@ public class ChimpManager {
     public void quit() throws IOException {
         // this command drops the connection, so handle it here
         synchronized (this) {
-            try {
-                sendMonkeyEventAndGetResponse("quit");
-            } catch (SocketException e) {
-                // flush was called after the call had been written, so it tried flushing to a
-                // broken pipe.
-            }
+            sendMonkeyEventAndGetResponse("quit");
         }
     }
 
@@ -397,7 +380,7 @@ public class ChimpManager {
      * Queries the on-screen view with the given id and returns the response.
      * It's up to the calling method to parse the returned String.
      * @param idType The type of ID to query the view by
-     * @param id The view id of the view
+     * @param ids The view id of the view
      * @param query the query
      * @return the response from the query
      * @throws java.io.IOException on error communicating with the device

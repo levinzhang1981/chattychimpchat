@@ -18,6 +18,7 @@ package de.clemensbartz.chattychimpchat.core;
 
 import de.clemensbartz.chattychimpchat.ChimpManager;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -62,60 +63,60 @@ public interface IChimpView {
     /**
      * Obtain the class of the view as a string
      */
-    String getViewClass();
+    String getViewClass() throws IOException;
 
     /**
      * Obtain the text contained in the view
      */
-    String getText();
+    String getText() throws IOException;
 
     /**
      * Obtain the location of the view on the device screen
      */
-    ChimpRect getLocation();
+    ChimpRect getLocation() throws IOException;
 
     /**
      * Obtain the checked status of this view.
      */
-    boolean getChecked();
+    boolean getChecked() throws IOException;
 
     /**
      * Obtain the enabled status of this view.
      */
-    boolean getEnabled();
+    boolean getEnabled() throws IOException;
 
     /**
      * Obtain the selected status of this view.
      */
-    boolean getSelected();
+    boolean getSelected() throws IOException;
 
     /**
      * Set the selected status of the this  view
      */
-    void setSelected(boolean selected);
+    void setSelected(boolean selected) throws IOException;
 
     /**
      * Obtain the focused status of this view.
      */
-    boolean getFocused();
+    boolean getFocused() throws IOException;
 
     /**
      * Set the focused status of this view.
      */
-    void setFocused(boolean focused);
+    void setFocused(boolean focused) throws IOException;
 
     /**
      * Retrieve the parent of this view if it has one.
      */
-    IChimpView getParent();
+    IChimpView getParent() throws IOException;
 
     /**
      * Get the children of this view as a list of IChimpViews.
      */
-    List<IChimpView> getChildren();
+    List<IChimpView> getChildren() throws IOException;
 
     /**
      * Get the accessibility ids of this view.
      */
-    AccessibilityIds getAccessibilityIds();
+    AccessibilityIds getAccessibilityIds() throws IOException;
 }

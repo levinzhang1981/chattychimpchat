@@ -68,20 +68,16 @@ public abstract class ChimpImageBase implements IChimpImage {
     }
 
     @Override
-    public byte[] convertToBytes(String format) {
+    public byte[] convertToBytes(String format) throws IOException{
       BufferedImage argb = convertSnapshot();
 
       ByteArrayOutputStream os = new ByteArrayOutputStream();
-      try {
-          ImageIO.write(argb, format, os);
-      } catch (IOException e) {
-          return new byte[0];
-      }
+      ImageIO.write(argb, format, os);
       return os.toByteArray();
     }
 
     @Override
-    public boolean writeToFile(String path, String format) {
+    public boolean writeToFile(String path, String format) throws IOException {
         if (format != null) {
             return writeToFileHelper(path, format);
         }
@@ -96,21 +92,16 @@ public abstract class ChimpImageBase implements IChimpImage {
         }
         ImageWriter writer = writers.next();
         BufferedImage image = convertSnapshot();
+        File f = new File(path);
+        f.delete();
+
+        ImageOutputStream outputStream = ImageIO.createImageOutputStream(f);
+        writer.setOutput(outputStream);
         try {
-            File f = new File(path);
-            f.delete();
-
-            ImageOutputStream outputStream = ImageIO.createImageOutputStream(f);
-            writer.setOutput(outputStream);
-
-            try {
-                writer.write(image);
-            } finally {
-                writer.dispose();
-                outputStream.flush();
-            }
-        } catch (IOException e) {
-            return false;
+            writer.write(image);
+        } finally {
+            writer.dispose();
+            outputStream.flush();
         }
         return true;
     }
@@ -133,14 +124,10 @@ public abstract class ChimpImageBase implements IChimpImage {
         return argb;
     }
 
-    private boolean writeToFileHelper(String path, String format) {
+    private boolean writeToFileHelper(String path, String format) throws IOException {
         BufferedImage argb = convertSnapshot();
 
-        try {
-            ImageIO.write(argb, format, new File(path));
-        } catch (IOException e) {
-            return false;
-        }
+        ImageIO.write(argb, format, new File(path));
         return true;
     }
 
@@ -191,20 +178,15 @@ public abstract class ChimpImageBase implements IChimpImage {
         }
     }
 
-    public static IChimpImage loadImageFromFile(String path) {
+    public static IChimpImage loadImageFromFile(String path) throws IOException {
         File f = new File(path);
         if (f.exists() && f.canRead()) {
-            try {
-                BufferedImage bufferedImage = ImageIO.read(new File(path));
-                if (bufferedImage == null) {
-                    LOG.log(Level.WARNING, "Cannot decode file %s", path);
-                    return null;
-                }
-                return new BufferedImageChimpImage(bufferedImage);
-            } catch (IOException e) {
-                LOG.log(Level.WARNING, "Exception trying to decode image", e);
+            BufferedImage bufferedImage = ImageIO.read(new File(path));
+            if (bufferedImage == null) {
+                LOG.log(Level.WARNING, "Cannot decode file %s", path);
                 return null;
             }
+            return new BufferedImageChimpImage(bufferedImage);
         } else {
             LOG.log(Level.WARNING, "Cannot read file %s", path);
             return null;

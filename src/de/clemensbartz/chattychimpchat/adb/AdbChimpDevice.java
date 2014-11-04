@@ -41,7 +41,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +64,9 @@ public class AdbChimpDevice implements IChimpDevice {
     private final IDevice device;
     private ChimpManager manager;
 
-    public AdbChimpDevice(IDevice device) {
+    public AdbChimpDevice(IDevice device) throws TimeoutException, IOException, AdbCommandRejectedException,
+        InterruptedException
+    {
         this.device = device;
         this.manager = createManager("127.0.0.1", 12345);
 
@@ -78,12 +79,8 @@ public class AdbChimpDevice implements IChimpDevice {
     }
 
     @Override
-    public void dispose() {
-        try {
-            manager.quit();
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Error getting the manager to quit", e);
-        }
+    public void dispose() throws IOException{
+        manager.quit();
         manager.close();
         executor.shutdown();
         manager = null;
@@ -119,37 +116,17 @@ public class AdbChimpDevice implements IChimpDevice {
         });
     }
 
-    private ChimpManager createManager(String address, int port) {
-        try {
-            device.createForward(port, port);
-        } catch (TimeoutException e) {
-            LOG.log(Level.SEVERE, "Timeout creating adb port forwarding", e);
-            return null;
-        } catch (AdbCommandRejectedException e) {
-            LOG.log(Level.SEVERE, "Adb rejected adb port forwarding command: " + e.getMessage(), e);
-            return null;
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Unable to create adb port forwarding: " + e.getMessage(), e);
-            return null;
-        }
+    private ChimpManager createManager(String address, int port) throws TimeoutException,
+            AdbCommandRejectedException, IOException, UnknownHostException, InterruptedException {
+        device.createForward(port, port);
 
         String command = "monkey --port " + port;
         executeAsyncCommand(command, new LoggingOutputReceiver(LOG, Level.FINE));
 
         // Sleep for a second to give the command time to execute.
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            LOG.log(Level.SEVERE, "Unable to sleep", e);
-        }
+        Thread.sleep(1000);
 
-        InetAddress addr;
-        try {
-            addr = InetAddress.getByName(address);
-        } catch (UnknownHostException e) {
-            LOG.log(Level.SEVERE, "Unable to convert address into InetAddress: " + address, e);
-            return null;
-        }
+        InetAddress addr = InetAddress.getByName(address);
 
         // We have a tough problem to solve here.  "monkey" on the device gives us no indication
         // when it has started up and is ready to serve traffic.  If you try too soon, commands
@@ -167,35 +144,13 @@ public class AdbChimpDevice implements IChimpDevice {
                 return null;
             }
 
-            try {
-                Thread.sleep(MANAGER_CREATE_WAIT_TIME_MS);
-            } catch (InterruptedException e) {
-                LOG.log(Level.SEVERE, "Unable to sleep", e);
-            }
+            Thread.sleep(MANAGER_CREATE_WAIT_TIME_MS);
 
-            Socket monkeySocket;
-            try {
-                monkeySocket = new Socket(addr, port);
-            } catch (IOException e) {
-                LOG.log(Level.FINE, "Unable to connect socket", e);
-                success = false;
-                continue;
-            }
+            Socket monkeySocket = new Socket(addr, port);
 
-            try {
-                mm = new ChimpManager(monkeySocket);
-            } catch (IOException e) {
-                LOG.log(Level.SEVERE, "Unable to open writer and reader to socket");
-                continue;
-            }
+            mm = new ChimpManager(monkeySocket);
 
-            try {
-                mm.wake();
-            } catch (IOException e) {
-                LOG.log(Level.FINE, "Unable to wake up device", e);
-                success = false;
-                continue;
-            }
+            mm.wake();
             success = true;
         }
 
@@ -203,19 +158,8 @@ public class AdbChimpDevice implements IChimpDevice {
     }
 
     @Override
-    public IChimpImage takeSnapshot() {
-        try {
-            return new AdbChimpImage(device.getScreenshot());
-        } catch (TimeoutException e) {
-            LOG.log(Level.SEVERE, "Unable to take snapshot", e);
-            return null;
-        } catch (AdbCommandRejectedException e) {
-            LOG.log(Level.SEVERE, "Unable to take snapshot", e);
-            return null;
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Unable to take snapshot", e);
-            return null;
-        }
+    public IChimpImage takeSnapshot() throws TimeoutException, AdbCommandRejectedException, IOException{
+        return new AdbChimpImage(device.getScreenshot());
     }
 
     @Override
@@ -224,35 +168,23 @@ public class AdbChimpDevice implements IChimpDevice {
     }
 
     @Override
-    public String getProperty(String key) {
-        try {
-            return manager.getVariable(key);
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Unable to get variable: " + key, e);
-            return null;
-        }
+    public String getProperty(String key) throws IOException {
+        return manager.getVariable(key);
     }
 
     @Override
-    public Collection<String> getPropertyList() {
-        try {
-            return manager.listVariable();
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Unable to get variable list", e);
-            return null;
-        }
+    public Collection<String> getPropertyList() throws IOException {
+        return manager.listVariable();
     }
 
     @Override
-    public void wake() {
-        try {
-            manager.wake();
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Unable to wake device (too sleepy?)", e);
-        }
+    public void wake() throws IOException {
+        manager.wake();
     }
 
-    private String shell(String... args) {
+    private String shell(String... args) throws TimeoutException, ShellCommandUnresponsiveException,
+            AdbCommandRejectedException, IOException
+    {
         StringBuilder cmd = new StringBuilder();
         for (String arg : args) {
             cmd.append(arg).append(" ");
@@ -261,136 +193,98 @@ public class AdbChimpDevice implements IChimpDevice {
     }
 
     @Override
-    public String shell(String cmd) {
+    public String shell(String cmd) throws TimeoutException, ShellCommandUnresponsiveException,
+        AdbCommandRejectedException, IOException
+    {
         // 5000 is the default timeout from the ddmlib.
         // This timeout arg is needed to the backwards compatibility.
         return shell(cmd, 5000);
     }
 
     @Override
-    public String shell(String cmd, int timeout) {
+    public String shell(String cmd, int timeout) throws TimeoutException, ShellCommandUnresponsiveException,
+        AdbCommandRejectedException, IOException
+    {
         CommandOutputCapture capture = new CommandOutputCapture();
-        try {
-            device.executeShellCommand(cmd, capture, timeout);
-        } catch (TimeoutException e) {
-            LOG.log(Level.SEVERE, "Error executing command: " + cmd, e);
-            return null;
-        } catch (ShellCommandUnresponsiveException e) {
-            LOG.log(Level.SEVERE, "Error executing command: " + cmd, e);
-            return null;
-        } catch (AdbCommandRejectedException e) {
-            LOG.log(Level.SEVERE, "Error executing command: " + cmd, e);
-            return null;
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Error executing command: " + cmd, e);
-            return null;
-        }
+        device.executeShellCommand(cmd, capture, timeout);
         return capture.toString();
     }
 
     @Override
-    public boolean installPackage(String path) {
-        try {
-            String result = device.installPackage(path, true);
-            if (result != null) {
-                LOG.log(Level.SEVERE, "Got error installing package: "+ result);
-                return false;
-            }
-            return true;
-        } catch (InstallException e) {
-            LOG.log(Level.SEVERE, "Error installing package: " + path, e);
+    public boolean installPackage(String path) throws InstallException {
+        String result = device.installPackage(path, true);
+        if (result != null) {
+            LOG.log(Level.SEVERE, "Got error installing package: "+ result);
             return false;
         }
+        return true;
     }
 
     @Override
-    public boolean removePackage(String packageName) {
-        try {
-            String result = device.uninstallPackage(packageName);
-            if (result != null) {
-                LOG.log(Level.SEVERE, "Got error uninstalling package "+ packageName + ": " +
-                        result);
-                return false;
-            }
-            return true;
-        } catch (InstallException e) {
-            LOG.log(Level.SEVERE, "Error installing package: " + packageName, e);
+    public boolean removePackage(String packageName) throws InstallException {
+        String result = device.uninstallPackage(packageName);
+        if (result != null) {
+            LOG.log(Level.SEVERE, "Got error uninstalling package "+ packageName + ": " +
+                    result);
             return false;
         }
+        return true;
     }
 
     @Override
-    public void press(String keyName, TouchPressType type) {
-        try {
-            switch (type) {
-                case DOWN_AND_UP:
-                    manager.press(keyName);
-                    break;
-                case DOWN:
-                    manager.keyDown(keyName);
-                    break;
-                case UP:
-                    manager.keyUp(keyName);
-                    break;
-            }
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Error sending press event: " + keyName + " " + type, e);
+    public void press(String keyName, TouchPressType type) throws IOException {
+        switch (type) {
+            case DOWN_AND_UP:
+                manager.press(keyName);
+                break;
+            case DOWN:
+                manager.keyDown(keyName);
+                break;
+            case UP:
+                manager.keyUp(keyName);
+                break;
         }
     }
 
     @Override
-    public void press(PhysicalButton key, TouchPressType type) {
+    public void press(PhysicalButton key, TouchPressType type) throws IOException {
       press(key.getKeyName(), type);
     }
 
     @Override
-    public void type(String string) {
-        try {
-            manager.type(string);
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Error Typing: " + string, e);
+    public void type(String string) throws IOException {
+        manager.type(string);
+    }
+
+    @Override
+    public void touch(int x, int y, TouchPressType type) throws IOException {
+        switch (type) {
+            case DOWN:
+                manager.touchDown(x, y);
+                break;
+            case UP:
+                manager.touchUp(x, y);
+                break;
+            case DOWN_AND_UP:
+                manager.tap(x, y);
+                break;
+            case MOVE:
+                manager.touchMove(x, y);
+                break;
         }
     }
 
     @Override
-    public void touch(int x, int y, TouchPressType type) {
-        try {
-            switch (type) {
-                case DOWN:
-                    manager.touchDown(x, y);
-                    break;
-                case UP:
-                    manager.touchUp(x, y);
-                    break;
-                case DOWN_AND_UP:
-                    manager.tap(x, y);
-                    break;
-                case MOVE:
-                    manager.touchMove(x, y);
-                    break;
-            }
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Error sending touch event: " + x + " " + y + " " + type, e);
-        }
-    }
-
-    @Override
-    public void reboot(String into) {
-        try {
-            device.reboot(into);
-        } catch (TimeoutException e) {
-            LOG.log(Level.SEVERE, "Unable to reboot device", e);
-        } catch (AdbCommandRejectedException e) {
-            LOG.log(Level.SEVERE, "Unable to reboot device", e);
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Unable to reboot device", e);
-        }
+    public void reboot(String into) throws TimeoutException, AdbCommandRejectedException, IOException{
+        device.reboot(into);
     }
 
     @Override
     public void startActivity(String uri, String action, String data, String mimetype,
             Collection<String> categories, Map<String, Object> extras, String component,
-            int flags) {
+            int flags) throws IOException, InterruptedException, AdbCommandRejectedException, TimeoutException,
+            ShellCommandUnresponsiveException
+    {
         List<String> intentArgs = buildIntentArgString(uri, action, data, mimetype, categories,
                 extras, component, flags);
         shell(Lists.asList("am", "start",
@@ -400,7 +294,9 @@ public class AdbChimpDevice implements IChimpDevice {
     @Override
     public void broadcastIntent(String uri, String action, String data, String mimetype,
             Collection<String> categories, Map<String, Object> extras, String component,
-            int flags) {
+            int flags) throws IOException, InterruptedException, AdbCommandRejectedException, TimeoutException,
+            ShellCommandUnresponsiveException
+    {
         List<String> intentArgs = buildIntentArgString(uri, action, data, mimetype, categories,
                 extras, component, flags);
         shell(Lists.asList("am", "broadcast",
@@ -488,7 +384,9 @@ public class AdbChimpDevice implements IChimpDevice {
     }
 
     @Override
-    public Map<String, Object> instrument(String packageName, Map<String, Object> args) {
+    public Map<String, Object> instrument(String packageName, Map<String, Object> args) throws IOException,
+            InterruptedException, AdbCommandRejectedException, TimeoutException, ShellCommandUnresponsiveException
+    {
         List<String> shellCmd = Lists.newArrayList("am", "instrument", "-w", "-r");
         for (Entry<String, Object> entry: args.entrySet()) {
             final String key = entry.getKey();
@@ -598,13 +496,8 @@ public class AdbChimpDevice implements IChimpDevice {
 
 
     @Override
-    public Collection<String> getViewIdList() {
-        try {
-            return manager.listViewIds();
-        } catch(IOException e) {
-            LOG.log(Level.SEVERE, "Error retrieving view IDs", e);
-            return new ArrayList<String>();
-        }
+    public Collection<String> getViewIdList() throws IOException {
+        return manager.listViewIds();
     }
 
     @Override
@@ -613,17 +506,12 @@ public class AdbChimpDevice implements IChimpDevice {
     }
 
     @Override
-    public Collection<IChimpView> getViews(IMultiSelector selector) {
+    public Collection<IChimpView> getViews(IMultiSelector selector) throws IOException {
         return selector.getViews(manager);
     }
 
     @Override
-    public IChimpView getRootView() {
-        try {
-            return manager.getRootView();
-        } catch (IOException e) {
-            LOG.log(Level.SEVERE, "Error retrieving root view");
-            return null;
-        }
+    public IChimpView getRootView() throws IOException {
+        return manager.getRootView();
     }
 }

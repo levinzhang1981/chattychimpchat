@@ -15,7 +15,9 @@
  */
 package de.clemensbartz.chattychimpchat.adb.image;
 
+import com.android.ddmlib.AdbCommandRejectedException;
 import com.android.ddmlib.RawImage;
+import com.android.ddmlib.TimeoutException;
 import de.clemensbartz.chattychimpchat.adb.AdbBackend;
 import de.clemensbartz.chattychimpchat.adb.AdbChimpImage;
 import de.clemensbartz.chattychimpchat.core.IChimpBackend;
@@ -101,7 +103,9 @@ public class CaptureRawAndConvertedImage {
         out.close();
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, AdbCommandRejectedException, InterruptedException,
+            TimeoutException
+    {
         IChimpBackend backend = new AdbBackend();
         IChimpDevice device = backend.waitForConnection();
         IChimpImage snapshot = (IChimpImage) device.takeSnapshot();

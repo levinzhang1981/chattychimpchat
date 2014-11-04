@@ -18,6 +18,7 @@ package de.clemensbartz.chattychimpchat.core;
 
 import de.clemensbartz.chattychimpchat.ChimpManager;
 
+import java.io.IOException;
 import java.util.Collection;
 
 /** An interface for selectors that select more than one item */
@@ -25,5 +26,5 @@ public interface IMultiSelector {
     /**
      * A method that allows you to get a list of  views based on the given selector type
      */
-    Collection<IChimpView> getViews(ChimpManager manager);
+    Collection<IChimpView> getViews(ChimpManager manager) throws IOException;
 }
