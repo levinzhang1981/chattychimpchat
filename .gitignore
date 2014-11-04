@@ -1,4 +1,5 @@
 *.idea
 *.iml
-out/
+out/production
+out/tests
 res/

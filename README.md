@@ -7,6 +7,8 @@ This is a chattier chimpchat implementation based on this commit from the
  
 It will throw most exceptions occurring in the code thus enabling you to catch them!
 
+Please download the whole repository. You can find the Jar-File under out/artifacts/chattychimpchat.
+
 ## Development
 
 In order to build this library you will need the following jars from the official SDK:
