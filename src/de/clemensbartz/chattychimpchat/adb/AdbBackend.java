@@ -103,7 +103,7 @@ public class AdbBackend implements IChimpBackend {
         Pattern pattern = Pattern.compile(deviceIdRegex);
         for (IDevice device : bridge.getDevices()) {
             String serialNumber = device.getSerialNumber();
-            if (pattern.matcher(serialNumber).matches()) {
+            if (pattern.matcher(serialNumber).matches() || serialNumber.equals(deviceIdRegex)) {
                 return device;
             }
         }
@@ -120,6 +120,10 @@ public class AdbBackend implements IChimpBackend {
     public IChimpDevice waitForConnection(long timeoutMs, String deviceIdRegex) throws IOException,
             AdbCommandRejectedException, InterruptedException, TimeoutException
     {
+        // Check for default values to guarantee at least two device checking cycles
+        if (timeoutMs < CONNECTION_ITERATION_TIMEOUT_MS) {
+            timeoutMs = CONNECTION_ITERATION_TIMEOUT_MS + 1;
+        }
         do {
             IDevice device = findAttachedDevice(deviceIdRegex);
             // Only return the device when it is online

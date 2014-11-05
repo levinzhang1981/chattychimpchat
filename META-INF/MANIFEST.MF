@@ -2,4 +2,4 @@ Manifest-Version: 1.0
 Created-By: 1.7.0_55 (Oracle Corporation)
 Name: de/clemensbartz/chattychimpchat
 Specification-Title: "Chatty ChimpChat"
-Specification-Version: "1.0"
+Specification-Version: "1.1"
