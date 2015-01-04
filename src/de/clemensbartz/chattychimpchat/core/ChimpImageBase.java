@@ -19,6 +19,7 @@ import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
@@ -180,17 +181,18 @@ public abstract class ChimpImageBase implements IChimpImage {
 
     public static IChimpImage loadImageFromFile(String path) throws IOException {
         File f = new File(path);
-        if (f.exists() && f.canRead()) {
-            BufferedImage bufferedImage = ImageIO.read(new File(path));
-            if (bufferedImage == null) {
-                LOG.log(Level.WARNING, "Cannot decode file %s", path);
-                return null;
-            }
-            return new BufferedImageChimpImage(bufferedImage);
-        } else {
-            LOG.log(Level.WARNING, "Cannot read file %s", path);
+        if (!f.exists()) {
+            throw new FileNotFoundException("File " + path + " does not exist.");
+        }
+        if (!f.canRead()) {
+            throw new IOException("File " + path + " cannot be read.");
+        }
+        BufferedImage bufferedImage = ImageIO.read(new File(path));
+        if (bufferedImage == null) {
+            LOG.log(Level.WARNING, "Cannot decode file %s", path);
             return null;
         }
+        return new BufferedImageChimpImage(bufferedImage);
     }
 
     @Override
