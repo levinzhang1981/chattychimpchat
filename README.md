@@ -1,6 +1,6 @@
 # ChattyChimpchat
 
-[![Build Status](https://travis-ci.org/clemensbartz/chattychimpchat.svg?branch=master)](https://travis-ci.org/clemensbartz/chattychimpchat?branch=master) [![codecov.io](https://codecov.io/github/clemensbartz/chattychimpchat/coverage.svg?branch=master)](https://codecov.io/github/clemensbartz/chattychimpchat?branch=master)
+[![Build Status](https://travis-ci.org/clemensbartz/chattychimpchat.svg?branch=master)](https://travis-ci.org/clemensbartz/chattychimpchat?branch=master) [![Coverage Status](https://coveralls.io/repos/clemensbartz/chattychimpchat/badge.svg?branch=master&service=github)](https://coveralls.io/github/clemensbartz/chattychimpchat?branch=master) [![codecov.io](https://codecov.io/github/clemensbartz/chattychimpchat/coverage.svg?branch=master)](https://codecov.io/github/clemensbartz/chattychimpchat?branch=master)
 
 ## Overview
 
