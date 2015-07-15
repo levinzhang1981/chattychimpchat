@@ -110,13 +110,11 @@ public class AdbBackend implements IChimpBackend {
         return null;
     }
 
-    @Override
     public IChimpDevice waitForConnection() throws IOException,
             AdbCommandRejectedException, InterruptedException, TimeoutException {
         return waitForConnection(Integer.MAX_VALUE, ".*");
     }
 
-    @Override
     public IChimpDevice waitForConnection(long timeoutMs, String deviceIdRegex) throws IOException,
             AdbCommandRejectedException, InterruptedException, TimeoutException
     {
@@ -141,7 +139,6 @@ public class AdbBackend implements IChimpBackend {
         return null;
     }
 
-    @Override
     public void shutdown() throws IOException {
         for (IChimpDevice device : devices) {
             device.dispose();

@@ -1,5 +1,7 @@
 # ChattyChimpchat
 
+[![Build Status](https://travis-ci.org/clemensbartz/chattychimpchat.svg?branch=master)](https://travis-ci.org/clemensbartz/chattychimpchat?branch=master)
+
 ## Overview
 
 This is a chattier chimpchat implementation based on this commit from the
@@ -7,17 +9,9 @@ This is a chattier chimpchat implementation based on this commit from the
  
 It will throw most exceptions occurring in the code thus enabling you to catch them all!
 
-Please download the whole repository. You can find the Jar-File under out/artifacts/chattychimpchat.
-
 ## Development
 
-In order to build this library you will need the following jars from the official SDK:
-  * common.jar
-  * ddmlib.jar
-  * quava-15.0.jar
-  * hierarchyviewer2lib.jar
-  * swt.jar
-  * android.jar (under platforms/<version>/android.jar)
+Hierarchyviewer has been removed. The project can be used with Maven.
 
 ## Licence
 

@@ -22,7 +22,6 @@ import com.android.ddmlib.InstallException;
 import com.android.ddmlib.ShellCommandUnresponsiveException;
 import com.android.ddmlib.TimeoutException;
 import de.clemensbartz.chattychimpchat.ChimpManager;
-import de.clemensbartz.chattychimpchat.hierarchyviewer.HierarchyViewer;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -43,12 +42,6 @@ public interface IChimpDevice {
      * Dispose of any native resources this device may have taken hold of.
      */
     void dispose() throws IOException;
-
-    /**
-     * @return hierarchy viewer implementation for querying state of the view
-     * hierarchy.
-     */
-    HierarchyViewer getHierarchyViewer();
 
     /**
      * Take the current screen's snapshot.

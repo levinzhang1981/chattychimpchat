@@ -35,7 +35,6 @@ import de.clemensbartz.chattychimpchat.core.IMultiSelector;
 import de.clemensbartz.chattychimpchat.core.ISelector;
 import de.clemensbartz.chattychimpchat.core.PhysicalButton;
 import de.clemensbartz.chattychimpchat.core.TouchPressType;
-import de.clemensbartz.chattychimpchat.hierarchyviewer.HierarchyViewer;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -73,12 +72,10 @@ public class AdbChimpDevice implements IChimpDevice {
         Preconditions.checkNotNull(this.manager);
     }
 
-    @Override
     public ChimpManager getManager() {
         return manager;
     }
 
-    @Override
     public void dispose() throws IOException{
         manager.quit();
         manager.close();
@@ -86,15 +83,9 @@ public class AdbChimpDevice implements IChimpDevice {
         manager = null;
     }
 
-    @Override
-    public HierarchyViewer getHierarchyViewer() {
-        return new HierarchyViewer(device);
-    }
-
     private void executeAsyncCommand(final String command,
             final LoggingOutputReceiver logger) {
         executor.submit(new Runnable() {
-            @Override
             public void run() {
                 try {
                     device.executeShellCommand(command, logger);
@@ -157,27 +148,22 @@ public class AdbChimpDevice implements IChimpDevice {
         return mm;
     }
 
-    @Override
     public IChimpImage takeSnapshot() throws TimeoutException, AdbCommandRejectedException, IOException{
         return new AdbChimpImage(device.getScreenshot());
     }
 
-    @Override
     public String getSystemProperty(String key) {
         return device.getProperty(key);
     }
 
-    @Override
     public String getProperty(String key) throws IOException {
         return manager.getVariable(key);
     }
 
-    @Override
     public Collection<String> getPropertyList() throws IOException {
         return manager.listVariable();
     }
 
-    @Override
     public void wake() throws IOException {
         manager.wake();
     }
@@ -192,7 +178,6 @@ public class AdbChimpDevice implements IChimpDevice {
         return shell(cmd.toString());
     }
 
-    @Override
     public String shell(String cmd) throws TimeoutException, ShellCommandUnresponsiveException,
         AdbCommandRejectedException, IOException
     {
@@ -201,7 +186,6 @@ public class AdbChimpDevice implements IChimpDevice {
         return shell(cmd, 5000);
     }
 
-    @Override
     public String shell(String cmd, int timeout) throws TimeoutException, ShellCommandUnresponsiveException,
         AdbCommandRejectedException, IOException
     {
@@ -210,7 +194,6 @@ public class AdbChimpDevice implements IChimpDevice {
         return capture.toString();
     }
 
-    @Override
     public boolean installPackage(String path) throws InstallException {
         String result = device.installPackage(path, true);
         if (result != null) {
@@ -220,7 +203,6 @@ public class AdbChimpDevice implements IChimpDevice {
         return true;
     }
 
-    @Override
     public boolean removePackage(String packageName) throws InstallException {
         String result = device.uninstallPackage(packageName);
         if (result != null) {
@@ -231,7 +213,6 @@ public class AdbChimpDevice implements IChimpDevice {
         return true;
     }
 
-    @Override
     public void press(String keyName, TouchPressType type) throws IOException {
         switch (type) {
             case DOWN_AND_UP:
@@ -246,17 +227,14 @@ public class AdbChimpDevice implements IChimpDevice {
         }
     }
 
-    @Override
     public void press(PhysicalButton key, TouchPressType type) throws IOException {
       press(key.getKeyName(), type);
     }
 
-    @Override
     public void type(String string) throws IOException {
         manager.type(string);
     }
 
-    @Override
     public void touch(int x, int y, TouchPressType type) throws IOException {
         switch (type) {
             case DOWN:
@@ -274,12 +252,10 @@ public class AdbChimpDevice implements IChimpDevice {
         }
     }
 
-    @Override
     public void reboot(String into) throws TimeoutException, AdbCommandRejectedException, IOException{
         device.reboot(into);
     }
 
-    @Override
     public void startActivity(String uri, String action, String data, String mimetype,
             Collection<String> categories, Map<String, Object> extras, String component,
             int flags) throws IOException, InterruptedException, AdbCommandRejectedException, TimeoutException,
@@ -291,7 +267,6 @@ public class AdbChimpDevice implements IChimpDevice {
                 intentArgs.toArray(ZERO_LENGTH_STRING_ARRAY)).toArray(ZERO_LENGTH_STRING_ARRAY));
     }
 
-    @Override
     public void broadcastIntent(String uri, String action, String data, String mimetype,
             Collection<String> categories, Map<String, Object> extras, String component,
             int flags) throws IOException, InterruptedException, AdbCommandRejectedException, TimeoutException,
@@ -383,7 +358,6 @@ public class AdbChimpDevice implements IChimpDevice {
         return parts;
     }
 
-    @Override
     public Map<String, Object> instrument(String packageName, Map<String, Object> args) throws IOException,
             InterruptedException, AdbCommandRejectedException, TimeoutException, ShellCommandUnresponsiveException
     {
@@ -443,7 +417,6 @@ public class AdbChimpDevice implements IChimpDevice {
         return map;
     }
 
-    @Override
     public void drag(int startx, int starty, int endx, int endy, int steps, long ms) {
         final long iterationTime = ms / steps;
 
@@ -451,7 +424,6 @@ public class AdbChimpDevice implements IChimpDevice {
         LinearInterpolator.Point start = new LinearInterpolator.Point(startx, starty);
         LinearInterpolator.Point end = new LinearInterpolator.Point(endx, endy);
         lerp.interpolate(start, end, new LinearInterpolator.Callback() {
-            @Override
             public void step(Point point) {
                 try {
                     manager.touchMove(point.getX(), point.getY());
@@ -466,7 +438,6 @@ public class AdbChimpDevice implements IChimpDevice {
                 }
             }
 
-            @Override
             public void start(Point point) {
                 try {
                     manager.touchDown(point.getX(), point.getY());
@@ -482,7 +453,6 @@ public class AdbChimpDevice implements IChimpDevice {
                 }
             }
 
-            @Override
             public void end(Point point) {
                 try {
                     manager.touchMove(point.getX(), point.getY());
@@ -495,22 +465,18 @@ public class AdbChimpDevice implements IChimpDevice {
     }
 
 
-    @Override
     public Collection<String> getViewIdList() throws IOException {
         return manager.listViewIds();
     }
 
-    @Override
     public IChimpView getView(ISelector selector) {
         return selector.getView(manager);
     }
 
-    @Override
     public Collection<IChimpView> getViews(IMultiSelector selector) throws IOException {
         return selector.getViews(manager);
     }
 
-    @Override
     public IChimpView getRootView() throws IOException {
         return manager.getRootView();
     }

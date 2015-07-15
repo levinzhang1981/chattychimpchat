@@ -1,6 +1,3 @@
 *.idea
 *.iml
-out/production
-out/test
-res/
-test
+/target
